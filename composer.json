@@ -1,10 +1,11 @@
 {
-    "name": "laravel/laravel",
+    "name": "my-work/project-pc",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "my-work",
     "keywords": [
-        "framework",
-        "laravel"
+        "my-work",
+        "demo",
+        "passprot"
     ],
     "license": "MIT",
     "require": {

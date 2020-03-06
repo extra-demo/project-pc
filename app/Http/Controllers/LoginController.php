@@ -23,16 +23,21 @@ class LoginController extends Controller
 
     public function login(Request $request, Response $response)
     {
+        $config = config('oauth.authorization_code');
         $authorizationUrl = $this->provider->getAuthorizationUrl([]);
 
-        Cache::put(LOGIN_STATUS_STATE, $this->provider->getState(), new \DateInterval("PT1M"));
+        Cache::put(
+            sprintf($config['cache_state_key'], 'id=1'),
+            $this->provider->getState(),
+            $config['cache_state_time']
+
+        );
 
         return redirect($authorizationUrl)->withCookie(cookie('return_url'), $request->query('return_url', '/'), 10);
     }
 
     public function callback(Request $request, Response $response)
     {
-
         $error = $request->query('error');
         if ($error) {
             return $request->query();
@@ -44,9 +49,13 @@ class LoginController extends Controller
         }
         try {
             $accessToken = $this->provider->getAccessToken('authorization_code', ['code' => $code]);
-            Cache::put(LOGIN_STATUS_KEY, $accessToken,  new \DateInterval("PT1H"));
+            Cache::put(
+                sprintf(config('oauth.oauth.cache_access_token_key'), 'id=1'),
+                $accessToken,
+                $accessToken->getExpires()
+            );
 
-            return $accessToken;
+            return redirect($request->cookie('return_url', '/'));
         } catch (IdentityProviderException $exception) {
             return $exception->getMessage();
         }

@@ -16,13 +16,15 @@ class OAuthServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(GenericProvider::class, function () {
+            $config = config('oauth.oauth');
+            var_dump($config);
             return new GenericProvider([
-                'clientId' => '2',    // The client ID assigned to you by the provider
-                'clientSecret' => 'project_pc_aaa',   // The client password assigned to you by the provider
-                'redirectUri' => 'http://127.0.0.1:8000/callback',
-                'urlAuthorize' => 'http://127.0.0.1:9501/authorize',
-                'urlAccessToken' => 'http://127.0.0.1:9501/access_token',
-                'urlResourceOwnerDetails' => 'http://127.0.0.1:9501/oauth2/lockdin/resource'
+                'clientId' => $config['client_id'],    // The client ID assigned to you by the provider
+                'clientSecret' => $config['clientSecret'],   // The client password assigned to you by the provider
+                'redirectUri' => $config['redirectUri'],
+                'urlAuthorize' => $config['urlAuthorize'],
+                'urlAccessToken' => $config['urlAccessToken'],
+                'urlResourceOwnerDetails' => $config['urlResourceOwnerDetails']
             ]);
         });
     }
