@@ -11,14 +11,15 @@
 |
 */
 
+use App\Http\Controllers\CallbackController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\LoginController;
 use \Illuminate\Support\Facades\Route;
 
-Route::get('/', [IndexController::class, 'showIndex'])
-    ->middleware(\App\Http\Middleware\DemoCheckLoginStatusMiddleware::class);
+Route::get('/', [IndexController::class, 'showIndex'])->middleware(\App\Http\Middleware\DemoCheckLoginStatusMiddleware::class);
 
 Route::get('/login', [LoginController::class, 'login']);
 
 Route::get('/callback', [LoginController::class, 'callback']);
 
+Route::get('/webhook', [CallbackController::class, 'webhook']);

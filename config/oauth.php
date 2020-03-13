@@ -12,6 +12,5 @@ return [
     ],
     'authorization_code' => [
         'cache_state_key' =>  'cache_sate_key:%s',
-        'cache_state_time' =>  60,
     ]
 ];

@@ -17,7 +17,6 @@ class OAuthServiceProvider extends ServiceProvider
     {
         $this->app->bind(GenericProvider::class, function () {
             $config = config('oauth.oauth');
-            var_dump($config);
             return new GenericProvider([
                 'clientId' => $config['client_id'],    // The client ID assigned to you by the provider
                 'clientSecret' => $config['clientSecret'],   // The client password assigned to you by the provider

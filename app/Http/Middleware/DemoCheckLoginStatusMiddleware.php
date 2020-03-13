@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -19,15 +20,17 @@ class DemoCheckLoginStatusMiddleware
      */
     public function handle($request, Closure $next)
     {
-        $key = sprintf(
-            config('oauth.oauth.cache_access_token_key'),
-            "id=1"
-        );
+        $uid = session()->get('uid');
+        if (empty($uid)) {
+            return $this->redirectTo($request);
+        }
+
+        $key = sprintf(config('oauth.oauth.cache_access_token_key'), $uid);
 
         /** @var AccessToken $accessToken */
         $accessToken = Cache::get($key);
         if (empty($accessToken)) {
-            return redirect('/login?return_url=' . $request->fullUrl());
+            return $this->redirectTo($request);
         }
 
         if ($accessToken->hasExpired()) {
@@ -40,10 +43,19 @@ class DemoCheckLoginStatusMiddleware
                 Cache::put($key, $newAccessToken, $newAccessToken->getExpires());
             } catch (IdentityProviderException $exception) {
                 Cache::forget($key);
-                return redirect('/login?return_url=' . $request->fullUrl());
+                return $this->redirectTo($request);
             }
         }
 
         return $next($request);
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    protected function redirectTo(Request $request)
+    {
+        return redirect('/login?return_url=' . $request->fullUrl());
     }
 }
