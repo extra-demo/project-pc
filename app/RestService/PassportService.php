@@ -31,16 +31,17 @@ class PassportService
 
     protected function withAccessToken(): self
     {
-        if (empty($this->accessToken)) {
+        $accessToken = $this->getAccessToken();
+        if (empty($accessToken)) {
             throw new \RuntimeException("access token null");
         }
 
-        if ($this->accessToken->hasExpired()) {
-            $this->accessToken = OAuthUtils::getInstance()->getAccessToken();
+        if ($accessToken->hasExpired()) {
+            $accessToken = OAuthUtils::getInstance()->getAccessToken();
         }
 
         $this->data['headers'] = array_merge($this->data['headers'], [
-            'Authorization' => 'Bearer ' .$this->accessToken->getToken(),
+            'Authorization' => 'Bearer ' . $accessToken->getToken(),
         ]);
 
         return $this;
@@ -81,6 +82,6 @@ class PassportService
      */
     public function getAccessToken(): AccessTokenInterface
     {
-        return $this->accessToken;
+        return $this->accessToken ?? OAuthUtils::getInstance()->getAccessToken();
     }
 }

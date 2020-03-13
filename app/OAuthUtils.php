@@ -72,6 +72,26 @@ class OAuthUtils
         return $this;
     }
 
+    public function clearAccessToken()
+    {
+        $uid = session()->get('uid');
+        if (empty($uid)) {
+            return;
+        }
+
+        $configKey = config('oauth.oauth.cache_access_token_key');
+        $key = sprintf($configKey, $uid);
+        if (!empty($this->accessToken)) {
+            try {
+                $this->getCache()->delete($key);
+                $this->accessToken = null;
+            } catch (InvalidArgumentException $e) {
+                $this->getLogger()->error(__METHOD__, ['e' => $e->getMessage()]);
+                return;
+            }
+        }
+    }
+
     /**
      * @return AccessTokenInterface|null
      */
@@ -87,6 +107,9 @@ class OAuthUtils
         if (empty($this->accessToken)) {
             try {
                 $this->accessToken = $this->getCache()->get($key);
+                if (empty($this->accessToken)) {
+                    return null;
+                }
             } catch (InvalidArgumentException $e) {
                 $this->getLogger()->error(__METHOD__, ['e' => $e->getMessage()]);
                 return null;

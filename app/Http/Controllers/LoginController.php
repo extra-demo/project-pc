@@ -84,6 +84,7 @@ class LoginController extends Controller
 
     public function logout()
     {
+        OAuthUtils::getInstance()->clearAccessToken();
         session()->remove('user');
         session()->remove('uid');
         return redirect('/');
