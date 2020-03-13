@@ -41,6 +41,11 @@ class OAuthUtils
     protected $provider;
 
     /**
+     * @var string
+     */
+    protected $uid;
+
+    /**
      * 一个月
      */
     const ACCESS_TOKEN_CACHE_TTL = 2592000;
@@ -74,21 +79,23 @@ class OAuthUtils
 
     public function clearAccessToken()
     {
-        $uid = session()->get('uid');
+        $uid = $this->getUid();
         if (empty($uid)) {
+            $this->getLogger()->error(__METHOD__, ['e' => 'uid empty']);
             return;
         }
 
         $configKey = config('oauth.oauth.cache_access_token_key');
         $key = sprintf($configKey, $uid);
         if (!empty($this->accessToken)) {
-            try {
-                $this->getCache()->delete($key);
-                $this->accessToken = null;
-            } catch (InvalidArgumentException $e) {
-                $this->getLogger()->error(__METHOD__, ['e' => $e->getMessage()]);
-                return;
-            }
+            $this->accessToken = null;
+        }
+
+        try {
+            $this->getCache()->delete($key);
+        } catch (InvalidArgumentException $e) {
+            $this->getLogger()->error(__METHOD__, ['e' => $e->getMessage()]);
+            return;
         }
     }
 
@@ -97,7 +104,7 @@ class OAuthUtils
      */
     public function getAccessToken(): ?AccessTokenInterface
     {
-        $uid = session()->get('uid');
+        $uid = $this->getUid();
         if (empty($uid)) {
             return null;
         }
@@ -169,5 +176,23 @@ class OAuthUtils
     public function getCache(): CacheInterface
     {
         return $this->cache ?? app('cache.store');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUid(): ?string
+    {
+        return $this->uid ?? session('uid');
+    }
+
+    /**
+     * @param string $uid
+     * @return OAuthUtils
+     */
+    public function setUid(string $uid): OAuthUtils
+    {
+        $this->uid = $uid;
+        return $this;
     }
 }

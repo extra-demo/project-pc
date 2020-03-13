@@ -28,4 +28,4 @@ Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/callback', [LoginController::class, 'callback']);
 
-Route::get('/webhook', [CallbackController::class, 'webhook']);
+Route::post('/webhook', [CallbackController::class, 'webhook']);
