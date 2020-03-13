@@ -24,6 +24,7 @@ class DemoCheckLoginStatusMiddleware
         // 初始化数据
         // 1 小时后，access_token 过期， 刷新 access_token， 更新本地 session 到期时间，
         if (OAuthUtils::getInstance()->getAccessToken() === null) {
+            OAuthUtils::getInstance()->clearAccessToken();
             return $this->redirectTo($request);
         }
 

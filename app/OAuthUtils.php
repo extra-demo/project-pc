@@ -97,6 +97,9 @@ class OAuthUtils
             $this->getLogger()->error(__METHOD__, ['e' => $e->getMessage()]);
             return;
         }
+
+        session()->remove('user');
+        session()->remove('uid');
     }
 
     /**
