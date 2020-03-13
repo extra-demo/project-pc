@@ -2,12 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\OAuthUtils;
+
 class IndexController extends Controller
 {
     public function showIndex()
     {
-        $key = sprintf(config('oauth.oauth.cache_access_token_key'), session()->get('uid'));
-        $accessToken = \Illuminate\Support\Facades\Cache::get($key);
-        return $accessToken;
+        return
+            [
+
+                'uid' => session('uid'),
+                'user' => session('user'),
+                'login' => route('login'),
+                'info' => route('info'),
+                'logout' => route('logout'),
+            ];
+    }
+
+    public function info()
+    {
+        $accessToken = OAuthUtils::getInstance()->getAccessToken();
+        return [
+            'access_token' => $accessToken,
+        ];
     }
 }

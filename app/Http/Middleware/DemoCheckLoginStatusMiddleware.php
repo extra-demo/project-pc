@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\OAuthUtils;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -20,31 +21,10 @@ class DemoCheckLoginStatusMiddleware
      */
     public function handle($request, Closure $next)
     {
-        $uid = session()->get('uid');
-        if (empty($uid)) {
+        // 初始化数据
+        // 1 小时后，access_token 过期， 刷新 access_token， 更新本地 session 到期时间，
+        if (OAuthUtils::getInstance()->getAccessToken() === null) {
             return $this->redirectTo($request);
-        }
-
-        $key = sprintf(config('oauth.oauth.cache_access_token_key'), $uid);
-
-        /** @var AccessToken $accessToken */
-        $accessToken = Cache::get($key);
-        if (empty($accessToken)) {
-            return $this->redirectTo($request);
-        }
-
-        if ($accessToken->hasExpired()) {
-            /** @var GenericProvider $provider */
-            $provider = app(GenericProvider::class);
-            try {
-                $newAccessToken = $provider->getAccessToken('refresh_token', [
-                    'refresh_token' => $accessToken->getRefreshToken()
-                ]);
-                Cache::put($key, $newAccessToken, $newAccessToken->getExpires());
-            } catch (IdentityProviderException $exception) {
-                Cache::forget($key);
-                return $this->redirectTo($request);
-            }
         }
 
         return $next($request);

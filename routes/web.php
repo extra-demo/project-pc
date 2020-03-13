@@ -16,9 +16,15 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\LoginController;
 use \Illuminate\Support\Facades\Route;
 
-Route::get('/', [IndexController::class, 'showIndex'])->middleware(\App\Http\Middleware\DemoCheckLoginStatusMiddleware::class);
+Route::get('/', [IndexController::class, 'showIndex']);
 
-Route::get('/login', [LoginController::class, 'login']);
+Route::get('/info', [IndexController::class, 'info'])
+    ->middleware(\App\Http\Middleware\DemoCheckLoginStatusMiddleware::class)
+    ->name('info');
+
+Route::get('/login', [LoginController::class, 'login'])->name('login');
+
+Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/callback', [LoginController::class, 'callback']);
 

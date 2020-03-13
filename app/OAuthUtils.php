@@ -40,6 +40,11 @@ class OAuthUtils
      */
     protected $provider;
 
+    /**
+     * 一个月
+     */
+    const ACCESS_TOKEN_CACHE_TTL = 2592000;
+
     private function __construct()
     {
         $this->provider = app(GenericProvider::class);
@@ -72,14 +77,18 @@ class OAuthUtils
      */
     public function getAccessToken(): ?AccessTokenInterface
     {
-        $configKey = config('oauth.oauth.cache_access_token_key');
         $uid = session()->get('uid');
+        if (empty($uid)) {
+            return null;
+        }
+
+        $configKey = config('oauth.oauth.cache_access_token_key');
         $key = sprintf($configKey, $uid);
         if (empty($this->accessToken)) {
             try {
-                $this->accessToken = $this->cache->get($key);
+                $this->accessToken = $this->getCache()->get($key);
             } catch (InvalidArgumentException $e) {
-                $this->logger->error(__METHOD__, ['e' => $e->getMessage()]);
+                $this->getLogger()->error(__METHOD__, ['e' => $e->getMessage()]);
                 return null;
             }
         }
@@ -90,12 +99,12 @@ class OAuthUtils
                     'refresh_token',
                     ['refresh_token' => $this->accessToken->getRefreshToken()]
                 );
-                $this->cache->set($key, $this->accessToken, $this->accessToken->getExpires());
+                $this->getCache()->set($key, $this->accessToken, self::ACCESS_TOKEN_CACHE_TTL);
             } catch (IdentityProviderException $ex) {
-                $this->logger->error(__METHOD__, ['code' => $ex->getCode(), 'msg' => $ex->getMessage()]);
+                $this->getLogger()->error(__METHOD__, ['code' => $ex->getCode(), 'msg' => $ex->getMessage()]);
                 return null;
             } catch (InvalidArgumentException $ex) {
-                $this->logger->error(__METHOD__, ['code' => $ex->getCode(), 'msg' => $ex->getMessage()]);
+                $this->getLogger()->error(__METHOD__, ['code' => $ex->getCode(), 'msg' => $ex->getMessage()]);
                 return null;
             }
         }
@@ -136,6 +145,6 @@ class OAuthUtils
      */
     public function getCache(): CacheInterface
     {
-        return $this->cache ?? app(Cache::class);
+        return $this->cache ?? app('cache.store');
     }
 }

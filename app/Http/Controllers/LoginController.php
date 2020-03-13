@@ -81,4 +81,11 @@ class LoginController extends Controller
             return $exception->getMessage();
         }
     }
+
+    public function logout()
+    {
+        session()->remove('user');
+        session()->remove('uid');
+        return redirect('/');
+    }
 }
